@@ -1,4 +1,4 @@
-name: Mirror the Github organization repos to Gitee and Deploy to Aliyun Docker
+name: Deploy to Aliyun Docker
 
 on:
   push:
@@ -21,7 +21,6 @@ jobs:
       if: env.RELEASE == 'true'
       uses: actions/checkout@v3
       with:
-        repository: 'recognize/front-web'
         path: 'front-web' 
   
     # 设置 SSH 密钥以便进行远程连接
@@ -43,7 +42,7 @@ jobs:
     - name: Upload source code to server (excluding .git)
       if: env.RELEASE == 'true'
       run: |
-        rsync -av --exclude='.git' --delete ./front-web/ root@101.200.160.131:/workspace/deploy/blog-zhjs/
+        rsync -av ./front-web/ root@101.200.160.131:/workspace/deploy/blog-zhjs/
         
     # 部署到服务器
     - name: Deploy Docker containers to server
