@@ -7,7 +7,7 @@ services:
       context: . # 构建上下文，通常是当前目录
       dockerfile: Dockerfile # Dockerfile 文件的位置
     ports:
-      - '3001:80'
+      - '3006:80'
     networks:
       - web_net 
 networks:
