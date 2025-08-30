@@ -20,9 +20,9 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   500: () => import("@/views/_builtin/500/index.vue"),
   "iframe-page": () => import("@/views/_builtin/iframe-page/[url].vue"),
   login: () => import("@/views/_builtin/login/index.vue"),
-  home: () => import("@/views/home/index.vue"),
   "bullying-firewall": () => import("@/views/bullying-firewall/index.vue"),
   "concentration-shield": () => import("@/views/concentration-shield/index.vue"),
   "emotional-lightning": () => import("@/views/emotional-lightning/index.vue"),
+  home: () => import("@/views/home/index.vue"),
   "relationship-umbrella": () => import("@/views/relationship-umbrella/index.vue"),
 };

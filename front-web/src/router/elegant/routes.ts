@@ -40,6 +40,37 @@ export const generatedRoutes: GeneratedRoute[] = [
     }
   },
   {
+    name: 'bullying-firewall',
+    path: '/bullying-firewall',
+    component: 'layout.base$view.bullying-firewall',
+    meta: {
+      title: 'bullying-firewall',
+      i18nKey: 'route.bullying-firewall',
+      order: 4
+    }
+  },
+  {
+    name: 'concentration-shield',
+    path: '/concentration-shield',
+    component: 'layout.base$view.concentration-shield',
+    meta: {
+      title: 'concentration-shield',
+      i18nKey: 'route.concentration-shield',
+      order: 3
+    }
+  },
+  {
+    name: 'emotional-lightning',
+    path: '/emotional-lightning',
+    component: 'layout.base$view.emotional-lightning',
+    meta: {
+      title: 'emotional-lightning',
+      i18nKey: 'route.emotional-lightning',
+      icon: 'cil:bolt-circle',
+      order: 2
+    }
+  },
+  {
     name: 'home',
     path: '/home',
     component: 'layout.base$view.home',
@@ -73,37 +104,6 @@ export const generatedRoutes: GeneratedRoute[] = [
       i18nKey: 'route.login',
       constant: true,
       hideInMenu: true
-    }
-  },
-  {
-    name: 'emotional-lightning',
-    path: '/emotional-lightning',
-    component: 'layout.base$view.emotional-lightning',
-    meta: {
-      title: 'emotional-lightning',
-      i18nKey: 'route.emotional-lightning',
-      icon: 'cil:bolt-circle',
-      order: 2
-    }
-  },
-    {
-    name: 'concentration-shield',
-    path: '/concentration-shield',
-    component: 'layout.base$view.concentration-shield',
-    meta: {
-      title: 'concentration-shield',
-      i18nKey: 'route.concentration-shield',
-      order: 3
-    }
-  },
-   {
-    name: 'bullying-firewall',
-    path: '/bullying-firewall',
-    component: 'layout.base$view.bullying-firewall',
-    meta: {
-      title: 'bullying-firewall',
-      i18nKey: 'route.bullying-firewall',
-      order: 4
     }
   },
   {

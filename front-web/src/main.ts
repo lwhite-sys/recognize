@@ -5,7 +5,7 @@ import { setupStore } from './store';
 import { setupRouter } from './router';
 import { setupI18n } from './locales';
 import App from './App.vue';
-
+import 'font-awesome/css/font-awesome.min.css'
 async function setupApp() {
   setupLoading();
 
