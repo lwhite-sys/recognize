@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人脸识别与表情识别系统</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .header {
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        .section {
+            background: white;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .section h2 {
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .upload-area {
+            border: 2px dashed #ddd;
+            padding: 40px;
+            text-align: center;
+            border-radius: 8px;
+            margin: 20px 0;
+            transition: all 0.3s;
+        }
+        .upload-area:hover {
+            border-color: #667eea;
+            background-color: #f8f9ff;
+        }
+        .upload-area.dragover {
+            border-color: #667eea;
+            background-color: #e8f0ff;
+        }
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result-area {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .camera-section {
+            text-align: center;
+        }
+        #videoElement {
+            width: 100%;
+            max-width: 640px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.info { background: #d1ecf1; color: #0c5460; }
+        
+        /* 系统信息样式 */
+        .system-info ul {
+            padding-left: 20px;
+            line-height: 1.8;
+        }
+        
+        .system-info li {
+            margin-bottom: 8px;
+        }
+        
+        .system-info strong {
+            color: #667eea;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .header {
+                padding: 20px;
+            }
+            .section {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🤖 人脸识别与表情识别系统</h1>
+        <p>功能完全分离的AI识别服务</p>
+        <div class="status info" id="systemStatus">
+            🟢 系统运行中 - 端口: 8001
+        </div>
+    </div>
+
+    <!-- 系统信息部分 -->
+    <div class="section system-info">
+        <h2>📊 系统信息</h2>
+        <p>欢迎使用人脸识别与表情识别系统！本系统提供以下功能：</p>
+        <ul>
+            <li><strong>人脸识别</strong>：识别图片或视频中的人脸身份</li>
+            <li><strong>表情识别</strong>：分析人脸表情状态</li>
+            <li><strong>综合识别</strong>：同时进行身份和表情识别</li>
+            <li><strong>实时识别</strong>：使用摄像头进行实时识别</li>
+        </ul>
+        <p><strong>使用方法</strong>：选择对应的功能模块，上传图片或视频文件，点击识别按钮即可开始分析。</p>
+        
+        <!-- 测试按钮 -->
+        <div style="margin-top: 20px; text-align: center;">
+            <button class="btn" onclick="testJavaScript()" style="background: #28a745;">🧪 测试JavaScript</button>
+            <button class="btn" onclick="testAPI()" style="background: #17a2b8;">🔗 测试API连接</button>
+        </div>
+    </div>
+
+    <!-- 人脸识别部分 -->
+    <div class="section">
+        <h2>👤 人脸识别</h2>
+        <p>上传图片或视频进行人脸身份识别</p>
+        
+        <div class="upload-area" id="faceUploadArea">
+            <p>📁 拖拽文件到此处或点击选择文件</p>
+            <input type="file" id="faceFileInput" accept="image/*,video/*" style="display: none;">
+            <button class="btn" onclick="document.getElementById('faceFileInput').click()">选择文件</button>
+        </div>
+        
+        <button class="btn" onclick="recognizeFace()" id="faceRecognizeBtn">开始人脸识别</button>
+        
+        <div class="result-area" id="faceResult" style="display: none;"></div>
+    </div>
+
+    <!-- 表情识别部分 -->
+    <div class="section">
+        <h2>😊 表情识别</h2>
+        <p>上传图片或视频进行人脸表情识别</p>
+        
+        <div class="upload-area" id="emotionUploadArea">
+            <p>📁 拖拽文件到此处或点击选择文件</p>
+            <input type="file" id="emotionFileInput" accept="image/*,video/*" style="display: none;">
+            <button class="btn" onclick="document.getElementById('emotionFileInput').click()">选择文件</button>
+        </div>
+        
+        <button class="btn" onclick="recognizeEmotion()" id="emotionRecognizeBtn">开始表情识别</button>
+        
+        <div class="result-area" id="emotionResult" style="display: none;"></div>
+    </div>
+
+    <!-- 综合识别部分 -->
+    <div class="section">
+        <h2>🔍 综合识别</h2>
+        <p>同时进行人脸身份识别和表情识别</p>
+        
+        <div class="upload-area" id="combinedUploadArea">
+            <p>📁 拖拽文件到此处或点击选择文件</p>
+            <input type="file" id="combinedFileInput" accept="image/*,video/*" style="display: none;">
+            <button class="btn" onclick="document.getElementById('combinedFileInput').click()">选择文件</button>
+        </div>
+        
+        <button class="btn" onclick="recognizeCombined()" id="combinedRecognizeBtn">开始综合识别</button>
+        
+        <div class="result-area" id="combinedResult" style="display: none;"></div>
+    </div>
+
+    <!-- 实时摄像头识别 -->
+    <div class="section">
+        <h2>📹 实时摄像头识别</h2>
+        <p>使用本地摄像头进行实时识别</p>
+        
+        <div class="camera-section">
+            <video id="videoElement" autoplay muted></video>
+            <br>
+            <button class="btn" onclick="startCamera()">开启摄像头</button>
+            <button class="btn" onclick="stopCamera()">关闭摄像头</button>
+            <button class="btn" onclick="startRealTimeRecognition()">开始实时识别</button>
+        </div>
+        
+        <div class="result-area" id="cameraResult" style="display: none;"></div>
+    </div>
+
+    <!-- 页脚信息 -->
+    <div class="section" style="text-align: center; background: #f8f9fa;">
+        <h3>📚 使用说明</h3>
+        <p><strong>支持格式</strong>：JPG, PNG, MP4, AVI 等常见图片和视频格式</p>
+        <p><strong>文件大小</strong>：图片最大 50MB，视频最大 500MB</p>
+        <p><strong>API文档</strong>：<a href="http://127.0.0.1:8001/docs" target="_blank">点击查看完整API文档</a></p>
+        <p style="color: #666; font-size: 14px;">© 2024 人脸识别与表情识别系统</p>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8001';
+        let mediaStream = null;
+        let recognitionInterval = null;
+        let websocket = null; // 新增 WebSocket 变量
+        let canvas = document.createElement('canvas'); // 用于捕获视频帧
+        let context = canvas.getContext('2d');
+
+        // 页面加载完成后检查系统状态
+        window.addEventListener('load', async () => {
+            console.log('开始检查系统状态...');
+            console.log('API_BASE:', API_BASE);
+            
+            try {
+                console.log('正在连接:', `${API_BASE}/health`);
+                const response = await fetch(`${API_BASE}/health`);
+                console.log('响应状态:', response.status);
+                console.log('响应内容:', response);
+                
+                if (response.ok) {
+                    document.getElementById('systemStatus').innerHTML = '🟢 系统运行中 - 端口: 8001';
+                    document.getElementById('systemStatus').className = 'status success';
+                    console.log('系统连接成功');
+                } else {
+                    document.getElementById('systemStatus').innerHTML = `🔴 系统连接失败 - 状态码: ${response.status}`;
+                    document.getElementById('systemStatus').className = 'status error';
+                    console.log('系统连接失败，状态码:', response.status);
+                }
+            } catch (error) {
+                console.error('连接错误:', error);
+                document.getElementById('systemStatus').innerHTML = `🔴 系统连接失败 - ${error.message}`;
+                document.getElementById('systemStatus').className = 'status error';
+            }
+        });
+
+        // 文件上传处理
+        function setupFileUpload(uploadAreaId, fileInputId) {
+            const uploadArea = document.getElementById(uploadAreaId);
+            const fileInput = document.getElementById(fileInputId);
+
+            // 创建状态显示区域（不覆盖原有内容）
+            const statusDiv = document.createElement('div');
+            statusDiv.id = `${fileInputId}_status`;
+            statusDiv.style.marginTop = '10px';
+            uploadArea.appendChild(statusDiv);
+
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    fileInput.files = files;
+                    updateFileStatus(fileInputId, files[0].name);
+                }
+            });
+
+            fileInput.addEventListener('change', () => {
+                if (fileInput.files.length > 0) {
+                    updateFileStatus(fileInputId, fileInput.files[0].name);
+                }
+            });
+        }
+
+        // 更新文件状态显示
+        function updateFileStatus(fileInputId, fileName) {
+            const statusDiv = document.getElementById(`${fileInputId}_status`);
+            if (statusDiv) {
+                statusDiv.innerHTML = `<p style="color: green; margin: 0;">✅ 已选择: ${fileName}</p>`;
+            }
+        }
+
+        // 初始化文件上传 - 移到DOMContentLoaded事件中
+        // setupFileUpload('faceUploadArea', 'faceFileInput');
+        // setupFileUpload('emotionUploadArea', 'emotionFileInput');
+        // setupFileUpload('combinedUploadArea', 'combinedFileInput');
+
+        // 全局元素查找函数
+        function getElementSafely(elementId, context = '') {
+            const element = document.getElementById(elementId);
+            if (!element) {
+                console.error(`未找到元素: ${elementId} (${context})`);
+                // 尝试重新查找
+                setTimeout(() => {
+                    const retryElement = document.getElementById(elementId);
+                    if (retryElement) {
+                        console.log(`重试成功找到元素: ${elementId}`);
+                    } else {
+                        console.error(`重试后仍未找到元素: ${elementId}`);
+                    }
+                }, 100);
+            }
+            return element;
+        }
+
+        // 人脸识别
+        async function recognizeFace() {
+            console.log('开始人脸识别...');
+            
+            const fileInput = getElementSafely('faceFileInput', '人脸识别函数');
+            if (!fileInput) {
+                console.error('未找到faceFileInput元素');
+                alert('系统错误：未找到文件输入元素，请刷新页面重试');
+                return;
+            }
+            
+            if (!fileInput.files || !fileInput.files.length) {
+                alert('请先选择文件');
+                return;
+            }
+
+            const btn = document.getElementById('faceRecognizeBtn');
+            const resultArea = document.getElementById('faceResult');
+            
+            btn.disabled = true;
+            btn.textContent = '识别中...';
+            resultArea.style.display = 'none';
+
+            try {
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+                
+                console.log('发送请求到:', `${API_BASE}/face/recognize_image`);
+                console.log('文件信息:', fileInput.files[0]);
+
+                const response = await fetch(`${API_BASE}/face/recognize_image`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                console.log('响应状态:', response.status);
+                console.log('响应头:', response.headers);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                console.log('识别结果:', result);
+                
+                resultArea.style.display = 'block';
+                resultArea.innerHTML = `<h3>识别结果:</h3><pre>${JSON.stringify(result, null, 2)}</pre>`;
+                
+                showStatus('人脸识别完成！', 'success');
+            } catch (error) {
+                console.error('人脸识别错误:', error);
+                resultArea.style.display = 'block';
+                resultArea.innerHTML = `<h3>识别失败:</h3><p style="color: red;">错误: ${error.message}</p>`;
+                showStatus('人脸识别失败', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '开始人脸识别';
+            }
+        }
+
+        // 表情识别
+        async function recognizeEmotion() {
+            console.log('开始表情识别...');
+            
+            const fileInput = getElementSafely('emotionFileInput', '表情识别函数');
+            if (!fileInput) {
+                console.error('未找到emotionFileInput元素');
+                alert('系统错误：未找到文件输入元素，请刷新页面重试');
+                return;
+            }
+            
+            if (!fileInput.files || !fileInput.files.length) {
+                alert('请先选择文件');
+                return;
+            }
+
+            const btn = document.getElementById('emotionRecognizeBtn');
+            const resultArea = document.getElementById('emotionResult');
+            
+            btn.disabled = true;
+            btn.textContent = '识别中...';
+            resultArea.style.display = 'none';
+
+            try {
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+                
+                console.log('发送请求到:', `${API_BASE}/emotion/recognize_image`);
+                console.log('文件信息:', fileInput.files[0]);
+
+                const response = await fetch(`${API_BASE}/emotion/recognize_image`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                console.log('响应状态:', response.status);
+                console.log('响应头:', response.headers);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                console.log('识别结果:', result);
+                
+                resultArea.style.display = 'block';
+                resultArea.innerHTML = `<h3>识别结果:</h3><pre>${JSON.stringify(result, null, 2)}</pre>`;
+                
+                showStatus('表情识别完成！', 'success');
+            } catch (error) {
+                console.error('表情识别错误:', error);
+                resultArea.style.display = 'block';
+                resultArea.innerHTML = `<h3>识别失败:</h3><p style="color: red;">错误: ${error.message}</p>`;
+                showStatus('表情识别失败', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '开始表情识别';
+            }
+        }
+
+        // 综合识别
+        async function recognizeCombined() {
+            const fileInput = document.getElementById('combinedFileInput');
+            if (!fileInput.files.length) {
+                alert('请先选择文件');
+                return;
+            }
+
+            const btn = document.getElementById('combinedRecognizeBtn');
+            const resultArea = document.getElementById('combinedResult');
+            
+            btn.disabled = true;
+            btn.textContent = '识别中...';
+            resultArea.style.display = 'none';
+
+            try {
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+
+                const response = await fetch(`${API_BASE}/combined/recognize_image`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                
+                resultArea.style.display = 'block';
+                resultArea.innerHTML = JSON.stringify(result, null, 2);
+                
+                showStatus('综合识别完成！', 'success');
+            } catch (error) {
+                resultArea.style.display = 'block';
+                resultArea.innerHTML = `错误: ${error.message}`;
+                showStatus('综合识别失败', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '开始综合识别';
+            }
+        }
+
+        // 开启摄像头
+        async function startCamera() {
+            try {
+                mediaStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { width: 640, height: 480 } 
+                });
+                document.getElementById('videoElement').srcObject = mediaStream;
+                showStatus('摄像头已开启', 'success');
+            } catch (error) {
+                showStatus(`无法开启摄像头: ${error.message}`, 'error');
+            }
+        }
+
+        // 开始实时识别
+        function startRealTimeRecognition() {
+            if (!mediaStream) {
+                alert('请先开启摄像头');
+                return;
+            }
+
+            const resultArea = document.getElementById('cameraResult');
+            resultArea.style.display = 'block';
+            resultArea.innerHTML = '实时识别中...\n';
+
+            // 如果已经有 WebSocket 连接，先关闭
+            if (websocket && websocket.readyState === WebSocket.OPEN) {
+                websocket.close();
+            }
+
+            // 建立 WebSocket 连接
+            websocket = new WebSocket(`${API_BASE.replace('http', 'ws')}/combined/recognize_stream`);
+
+            websocket.onopen = () => {
+                showStatus('WebSocket 连接已建立，开始发送视频流', 'success');
+                // 发送配置信息，告知后端是摄像头流
+                websocket.send(JSON.stringify({ type: "camera" })); 
+                recognitionInterval = setInterval(sendFrame, 100); // 每100毫秒发送一帧
+            };
+
+            websocket.onmessage = (event) => {
+                const result = JSON.parse(event.data);
+                resultArea.innerHTML = `<h3>实时识别结果:</h3><pre>${JSON.stringify(result, null, 2)}</pre>`;
+            };
+
+            websocket.onerror = (error) => {
+                console.error('WebSocket 错误:', error);
+                showStatus(`WebSocket 错误: ${error.message}`, 'error');
+                resultArea.innerHTML = `<h3>实时识别失败:</h3><p style="color: red;">WebSocket 错误: ${error.message}</p>`;
+                stopRealTimeRecognition();
+            };
+
+            websocket.onclose = () => {
+                console.log('WebSocket 连接已关闭');
+                showStatus('实时识别已停止 (WebSocket 断开)', 'info');
+                stopRealTimeRecognition();
+            };
+        }
+
+        // 发送视频帧
+        function sendFrame() {
+            const video = document.getElementById('videoElement');
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = canvas.toDataURL('image/jpeg', 0.8); // 转换为 JPEG base64
+                // 从 "data:image/jpeg;base64," 中去除前缀
+                const base64Data = imageData.split(',')[1];
+                if (websocket && websocket.readyState === WebSocket.OPEN) {
+                    websocket.send(JSON.stringify({ frame: base64Data }));
+                }
+            }
+        }
+
+        // 停止实时识别
+        function stopRealTimeRecognition() {
+            if (recognitionInterval) {
+                clearInterval(recognitionInterval);
+                recognitionInterval = null;
+            }
+            if (websocket && websocket.readyState === WebSocket.OPEN) {
+                websocket.close();
+                websocket = null;
+            }
+            document.getElementById('cameraResult').innerHTML = ''; // 清空结果
+            showStatus('实时识别已停止', 'info');
+        }
+
+        // 关闭摄像头
+        function stopCamera() {
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+                document.getElementById('videoElement').srcObject = null;
+                mediaStream = null;
+                
+                stopRealTimeRecognition(); // 关闭摄像头时也停止实时识别
+                
+                showStatus('摄像头已关闭', 'info');
+            }
+        }
+
+        // 显示状态信息
+        function showStatus(message, type) {
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+            
+            document.body.insertBefore(statusDiv, document.body.firstChild);
+            
+            setTimeout(() => {
+                statusDiv.remove();
+            }, 3000);
+        }
+
+        // 测试JavaScript是否正常工作
+        function testJavaScript() {
+            console.log('JavaScript测试开始...');
+            alert('JavaScript正常工作！');
+            showStatus('JavaScript测试通过！', 'success');
+        }
+
+        // 测试API连接
+        async function testAPI() {
+            console.log('开始测试API连接...');
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                console.log('API测试响应:', response);
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('API测试结果:', result);
+                    alert(`API连接成功！\n状态: ${result.status}\n模型加载: ${result.models_loaded}`);
+                    showStatus('API连接测试通过！', 'success');
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                console.error('API测试失败:', error);
+                alert(`API连接失败！\n错误: ${error.message}`);
+                showStatus('API连接测试失败！', 'error');
+            }
+        }
+
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('页面加载完成，开始初始化...');
+            
+            // 初始化文件上传
+            try {
+                setupFileUpload('faceUploadArea', 'faceFileInput');
+                setupFileUpload('emotionUploadArea', 'emotionFileInput');
+                setupFileUpload('combinedUploadArea', 'combinedFileInput');
+                console.log('文件上传初始化完成');
+            } catch (error) {
+                console.error('文件上传初始化失败:', error);
+            }
+            
+            // 验证DOM元素是否存在
+            const elements = [
+                'faceFileInput', 'emotionFileInput', 'combinedFileInput',
+                'faceRecognizeBtn', 'emotionRecognizeBtn', 'combinedRecognizeBtn'
+            ];
+            
+            elements.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    console.log(`✅ 找到元素: ${id}`);
+                } else {
+                    console.error(`❌ 未找到元素: ${id}`);
+                }
+            });
+            
+            // 添加页面状态监控
+            setInterval(() => {
+                const criticalElements = ['faceFileInput', 'emotionFileInput'];
+                criticalElements.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (!element) {
+                        console.warn(`⚠️ 监控发现元素丢失: ${id}`);
+                    }
+                });
+            }, 5000); // 每5秒检查一次
+            
+            showStatus('页面加载完成，可以开始使用了！', 'info');
+        });
+    </script>
+</body>
+</html>
+
